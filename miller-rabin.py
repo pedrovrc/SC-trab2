@@ -1,6 +1,7 @@
-import math
+import random
 
-LIMIT = 2000
+KEY_LEN = 102
+LIMIT = 200
 
 # numeros com 1024 bits de tamanho
 # ou seja, numeros maiores ou iguais a 2^1023,
@@ -37,6 +38,26 @@ def isPrime(number):
                 return True
 
         return False
+
+def set_bit(value, bit):
+    return value | (1<<bit)
+
+def getPrimeCandidate(length):
+    num = random.getrandbits(length)
+    num = set_bit(num, 0)
+    num = set_bit(num, length - 1)
+    return num
             
 # main
-print(isPrime(int(input())))
+
+# Geracao de chaves publica e privada
+#PK = getPrimeCandidate(KEY_LEN)
+#while(not(isPrime(PK))):
+#    PK = getPrimeCandidate(KEY_LEN)
+
+#SK = getPrimeCandidate(KEY_LEN)
+#while(not(isPrime(SK))):
+#    SK = getPrimeCandidate(KEY_LEN)
+
+#print(PK)
+#print(SK)
