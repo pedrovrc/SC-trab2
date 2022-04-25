@@ -21,7 +21,7 @@ BYTESTABLE = [[0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67,
               [0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16]]
 
 # tamanho da string = 16 caracteres = 128 bits
-def string2List (string):
+def string2List(string):
     list = []
     for i in range(0, 16):
         list.append(string[i])
@@ -48,26 +48,26 @@ def generateRoundKeys(key):
     list_temp = []
     for i in range(10):
         for j in range(4):
-            if j == 0:                                      # caso inicial
+            if j == 0:                                      # CASO INICIAL
                 temp = round_keys[i][12:16]                         # amostrando 4 ultimas letras
-                #printKeys(temp)
                 temp.append(temp.pop(0))                            # rotacao de coluna
-                #printKeys(temp)
                 temp = subBytes(temp)                               # traducao pela tabela subBytes
-                #printKeys(temp)
-                aux = strXOR(RCONTABLE[i], round_keys[i][0:4])
+                aux = strXOR(RCONTABLE[i], round_keys[i][0:4])      #
                 list_temp = strXOR(temp, aux)                       # XOR com coluna da tabela Rcon e com 4 primeiras letras da ultima chave
-            else:                                           # caso intermediario
+            else:                                           # CASO INTERMEDIARIO
                 temp = list_temp[j*4 - 4 : j*4]                     # amostrando 4 ultimas letras geradas
-                aux = round_keys[i][j*4 : j*4 + 4]
+                aux = round_keys[i][j*4 : j*4 + 4]                  #
                 temp = strXOR(temp, aux)                            # XOR com letras de 4 colunas à esquerda
                 for k in range(4):
                     list_temp.append(temp[k])
         round_keys.append(list_temp)                # armazenando chave de rodada
     return round_keys
 
-def addRoundKey(msg, round_keys):
-    return
+def addRoundKey(msg, round_key):
+    temp = []
+    for i in range(len(msg)):
+        temp.append(chr(ord(msg[i]) ^ ord(round_key[i])))
+    return temp
 
 def subBytes(msg):
     msb = 0
@@ -92,7 +92,6 @@ def printKeys(keys):
         print("]")
     return
 
-
 # Tamanho da mensagem: 128 bits - 16 caracteres
 def AES_block_encryption(msg_in, key_in):
 
@@ -100,8 +99,7 @@ def AES_block_encryption(msg_in, key_in):
     key = string2List(key_in)
 
     round_keys = generateRoundKeys(key)
-    printKeys(round_keys)
-    # msg = addRoundKey(msg, round_keys[0])
+    msg = addRoundKey(msg, round_keys[0])
     # for i in range(1, 10):
     #     msg = subBytes(msg)
     #     msg = shiftRows(msg)
@@ -114,7 +112,7 @@ def AES_block_encryption(msg_in, key_in):
     msg_in = list2String(msg)
     key_in = list2String(key)
 
-    return msg
+    return msg_in
 
 #main
 print("Insira a chave de cifracao (16 letras)")
@@ -123,6 +121,17 @@ key = input()
 print("Insira a mensagem a ser cifrada (16 letras):")
 message = input()
 
+print("Entradas:")
+print("Mensagem, texto:", message)
+print("Mensagem, binario:", end = ' ')
+for i in range(len(message)):
+    print(bin(ord(message[i]))[2:], end = '')
+print("\nChave:", key)
+
 encrypted_message = AES_block_encryption(message, key)
 
-#print(encrypted_message)
+print("Saida:")
+print("Mensagem:", encrypted_message)
+print("Mensagem, binario:", end = ' ')
+for i in range(len(encrypted_message)):
+    print(bin(ord(encrypted_message[i]))[2:], end = '')
