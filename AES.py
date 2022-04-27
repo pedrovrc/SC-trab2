@@ -1,7 +1,11 @@
-import random
+import numpy as np
 
-RCONTABLE = [[chr(1), chr(0), chr(0), chr(0)], [chr(2), chr(0), chr(0), chr(0)], [chr(4), chr(0), chr(0), chr(0)], [chr(8), chr(0), chr(0), chr(0)],
-             [chr(16), chr(0), chr(0), chr(0)], [chr(32), chr(0), chr(0), chr(0)], [chr(64), chr(0), chr(0), chr(0)], [chr(128), chr(0), chr(0), chr(0)],
+# VARIAVEIS AUXILIARES ---------------------------------------------------------------------------------------------
+
+RCONTABLE = [[chr(1), chr(0), chr(0), chr(0)], [chr(2), chr(0), chr(0), chr(0)],
+             [chr(4), chr(0), chr(0), chr(0)], [chr(8), chr(0), chr(0), chr(0)],
+             [chr(16), chr(0), chr(0), chr(0)], [chr(32), chr(0), chr(0), chr(0)],
+             [chr(64), chr(0), chr(0), chr(0)], [chr(128), chr(0), chr(0), chr(0)],
              [chr(27), chr(0), chr(0), chr(0)], [chr(54), chr(0), chr(0), chr(0)]]
 BYTESTABLE = [[0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76],
               [0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0],
@@ -19,6 +23,14 @@ BYTESTABLE = [[0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67,
               [0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e],
               [0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf],
               [0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16]]
+GALOISMATRIX = np.array([[2, 3, 1, 1],
+                         [1, 2, 3, 1],
+                         [1, 1, 2, 3],
+                         [3, 1, 1, 2]], dtype=np.int8)
+
+
+
+# FUNCOES AUXILIARES ---------------------------------------------------------------------------------------------
 
 # tamanho da string = 16 caracteres = 128 bits
 def string2List(string):
@@ -33,12 +45,31 @@ def list2String(list):
         string = string + list[i]
     return string
 
+def printKeys(keys):
+    for i in range(len(keys)):
+        print("[", end = '')
+        for j in range(len(keys[i])):
+            print(hex(ord(keys[i][j])), ", ", end = '')
+        print("]")
+    return
+
 # listas de tamanhos iguais somente
 def strXOR(str1, str2):
     str_final = []
     for i in range(len(str1)):
         str_final.append(chr(ord(str1[i]) ^ ord(str2[i])))  # bitwise XOR em cada caracter
     return str_final
+
+# amount > 0 -> rotacao para a direita
+# amount < 0 -> rotacao para a esquerda
+def listRotate(list, amount):
+    if list != []:
+        list = list[amount:] + list[:amount]
+    return list
+    
+
+
+# FUNCOES PRINCIPAIS ---------------------------------------------------------------------------------------------
 
 def generateRoundKeys(key):
     round_keys = []
@@ -79,18 +110,23 @@ def subBytes(msg):
     return msg
 
 def shiftRows(msg):
-    return
+    new_row2 = listRotate([msg[1], msg[5], msg[9], msg[13]], 1)
+    new_row3 = listRotate([msg[2], msg[6], msg[10], msg[14]], 2)
+    new_row4 = listRotate([msg[3], msg[7], msg[11], msg[15]], 3)
+    new_msg = []
+    for i in range(4):
+        new_msg.append(msg[4*i])
+        new_msg.append(new_row2[i])
+        new_msg.append(new_row3[i])
+        new_msg.append(new_row4[i])
+    return new_msg
 
 def mixColumns(msg):
-    return
-
-def printKeys(keys):
-    for i in range(len(keys)):
-        print("[", end = '')
-        for j in range(len(keys[i])):
-            print(hex(ord(keys[i][j])), ", ", end = '')
-        print("]")
-    return
+    ints = [int(ord(x)) for x in msg]
+    new_ints = []
+    for i in range(4):
+        new_ints += np.matmul(GALOISMATRIX, np.array(ints[i : i+4], dtype=np.int8)).tolist()
+    return [chr(x) for x in new_ints]
 
 # Tamanho da mensagem: 128 bits - 16 caracteres
 def AES_block_encryption(msg_in, key_in):
@@ -100,21 +136,24 @@ def AES_block_encryption(msg_in, key_in):
 
     round_keys = generateRoundKeys(key)
     msg = addRoundKey(msg, round_keys[0])
-    # for i in range(1, 10):
-    #     msg = subBytes(msg)
-    #     msg = shiftRows(msg)
-    #     msg = mixColumns(msg)
-    #     msg = addRoundKey(msg, round_keys[i])
-    # msg = subBytes(msg)
-    # msg = shiftRows(msg)
-    # msg = addRoundKey(msg, round_keys[10])
+    for i in range(1, 10):
+        msg = subBytes(msg)
+        msg = shiftRows(msg)
+        msg = mixColumns(msg)
+        msg = addRoundKey(msg, round_keys[i])
+    msg = subBytes(msg)
+    msg = shiftRows(msg)
+    msg = addRoundKey(msg, round_keys[10])
 
     msg_in = list2String(msg)
     key_in = list2String(key)
 
     return msg_in
 
-#main
+
+
+# ROTINA PRINCIPAL ---------------------------------------------------------------------------------------------
+
 print("Insira a chave de cifracao (16 letras)")
 key = input()
 
