@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 # VARIAVEIS AUXILIARES ---------------------------------------------------------------------------------------------
 
@@ -45,6 +46,14 @@ def list2String(list):
         string = string + list[i]
     return string
 
+def int2String(number):
+    string = ''
+    while(number != 0):
+        string += chr(number % 256)
+        number = int(number/256)
+    string = string[::-1]
+    return string
+
 def printKeys(keys):
     for i in range(len(keys)):
         print("[", end = '')
@@ -66,7 +75,6 @@ def listRotate(list, amount):
     if list != []:
         list = list[amount:] + list[:amount]
     return list
-    
 
 
 # FUNCOES PRINCIPAIS ---------------------------------------------------------------------------------------------
@@ -125,7 +133,7 @@ def mixColumns(msg):
     ints = [int(ord(x)) for x in msg]
     new_ints = []
     for i in range(4):
-        new_ints += np.matmul(GALOISMATRIX, np.array(ints[i : i+4], dtype=np.int8)).tolist()
+        new_ints += np.matmul(GALOISMATRIX, np.array(ints[i : i+4], dtype=np.uint8)).tolist()
     return [chr(x) for x in new_ints]
 
 # Tamanho da mensagem: 128 bits - 16 caracteres
@@ -150,6 +158,32 @@ def AES_block_encryption(msg_in, key_in):
 
     return msg_in
 
+def AES_CTR(message, key):
+    nonce = random.getrandbits(128)
+    count = 0
+    str_nonce = ''
+    plaintext_block = ''
+    cipher_block = ''
+    final_message = ''
+    for i in range(int(len(message)/16)):
+        count = i
+        str_nonce = int2String(nonce + count)
+        plaintext_block = message[i * 16: i * 16 + 16]
+        cipher_block = AES_block_encryption(str_nonce, key)
+        final_message += list2String(strXOR(cipher_block, plaintext_block))
+    
+    remainder = len(message) % 16
+    if remainder != 0:
+        plaintext_block = message[len(message) - remainder:]
+        count += 1
+        str_nonce = int2String(nonce + count)
+        cipher_block = AES_block_encryption(str_nonce, key)
+        for i in range(16 - remainder):
+            plaintext_block += '0'
+        final_message += list2String(strXOR(cipher_block, plaintext_block)[:remainder])
+
+    return final_message
+
 
 
 # ROTINA PRINCIPAL ---------------------------------------------------------------------------------------------
@@ -157,20 +191,20 @@ def AES_block_encryption(msg_in, key_in):
 print("Insira a chave de cifracao (16 letras)")
 key = input()
 
-print("Insira a mensagem a ser cifrada (16 letras):")
+print("Insira a mensagem a ser cifrada:")
 message = input()
 
 print("Entradas:")
 print("Mensagem, texto:", message)
 print("Mensagem, binario:", end = ' ')
 for i in range(len(message)):
-    print(bin(ord(message[i]))[2:], end = '')
+    print(bin(ord(message[i]))[2:], '|', end = '')
 print("\nChave:", key)
 
-encrypted_message = AES_block_encryption(message, key)
+encrypted_message = AES_CTR(message, key)
 
 print("Saida:")
 print("Mensagem:", encrypted_message)
 print("Mensagem, binario:", end = ' ')
 for i in range(len(encrypted_message)):
-    print(bin(ord(encrypted_message[i]))[2:], end = '')
+    print(bin(ord(encrypted_message[i]))[2:], '|', end = '')
