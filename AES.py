@@ -2,6 +2,9 @@ import numpy as np
 import random
 
 # VARIAVEIS AUXILIARES ---------------------------------------------------------------------------------------------
+#   Variaveis globais feitas para armazenar dados extensos que sao parte do algoritmo da cifra de bloco AES. Foram
+# criadas globalmente para não colocar declaracoes grandes no meio do codigo.
+
 
 RCONTABLE = [[chr(1), chr(0), chr(0), chr(0)], [chr(2), chr(0), chr(0), chr(0)],
              [chr(4), chr(0), chr(0), chr(0)], [chr(8), chr(0), chr(0), chr(0)],
@@ -29,9 +32,16 @@ GALOISMATRIX = np.array([[2, 3, 1, 1],
                          [1, 1, 2, 3],
                          [3, 1, 1, 2]], dtype=np.int8)
 
+# DEFINICOES ---------------------------------------------------------------------------------------------
+#   Definicoes de tamanhos comumente usados. Criados para promover maior clareza no codigo e retirar
+# numeros soltos.
+
 
 
 # FUNCOES AUXILIARES ---------------------------------------------------------------------------------------------
+#   Funcoes criadas para maior clareza e modularizacao do codigo. Sao tarefas que precisam ser executadas varias
+# vezes, com tarefas relativamente simples e encapsulaveis.
+
 
 # tamanho da string = 16 caracteres = 128 bits
 def string2List(string):
@@ -78,7 +88,11 @@ def listRotate(list, amount):
 
 
 # FUNCOES PRINCIPAIS ---------------------------------------------------------------------------------------------
+#   Funcoes integrais para a logica do algoritmo da cifra de bloco AES e para o modo de operacao CTR.
 
+
+#   Funcao generateRoundKeys:
+# Funcao responsavel por gerar uma lista que contenha todas as chaves utilizadas na cifra de bloco AES.
 def generateRoundKeys(key):
     round_keys = []
     round_keys.append(key)
@@ -137,7 +151,7 @@ def mixColumns(msg):
     return [chr(x) for x in new_ints]
 
 # Tamanho da mensagem: 128 bits - 16 caracteres
-def AES_block_encryption(msg_in, key_in):
+def block_encryption(msg_in, key_in):
 
     msg = string2List(msg_in)
     key = string2List(key_in)
@@ -158,18 +172,19 @@ def AES_block_encryption(msg_in, key_in):
 
     return msg_in
 
-def AES_CTR(message, key):
+def CTRmode(message, key):
     nonce = random.getrandbits(128)
     count = 0
     str_nonce = ''
     plaintext_block = ''
     cipher_block = ''
     final_message = ''
+
     for i in range(int(len(message)/16)):
         count = i
         str_nonce = int2String(nonce + count)
         plaintext_block = message[i * 16: i * 16 + 16]
-        cipher_block = AES_block_encryption(str_nonce, key)
+        cipher_block = block_encryption(str_nonce, key)
         final_message += list2String(strXOR(cipher_block, plaintext_block))
     
     remainder = len(message) % 16
@@ -177,34 +192,9 @@ def AES_CTR(message, key):
         plaintext_block = message[len(message) - remainder:]
         count += 1
         str_nonce = int2String(nonce + count)
-        cipher_block = AES_block_encryption(str_nonce, key)
+        cipher_block = block_encryption(str_nonce, key)
         for i in range(16 - remainder):
             plaintext_block += '0'
         final_message += list2String(strXOR(cipher_block, plaintext_block)[:remainder])
 
     return final_message
-
-
-
-# ROTINA PRINCIPAL ---------------------------------------------------------------------------------------------
-
-print("Insira a chave de cifracao (16 letras)")
-key = input()
-
-print("Insira a mensagem a ser cifrada:")
-message = input()
-
-print("Entradas:")
-print("Mensagem, texto:", message)
-print("Mensagem, binario:", end = ' ')
-for i in range(len(message)):
-    print(bin(ord(message[i]))[2:], '|', end = '')
-print("\nChave:", key)
-
-encrypted_message = AES_CTR(message, key)
-
-print("Saida:")
-print("Mensagem:", encrypted_message)
-print("Mensagem, binario:", end = ' ')
-for i in range(len(encrypted_message)):
-    print(bin(ord(encrypted_message[i]))[2:], '|', end = '')
