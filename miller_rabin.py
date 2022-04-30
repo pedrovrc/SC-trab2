@@ -1,6 +1,6 @@
 import random
 
-KEY_LEN = 102
+KEY_LEN = 16
 LIMIT = 200
 
 # numeros com 1024 bits de tamanho
@@ -47,17 +47,3 @@ def getPrimeCandidate(length):
     num = set_bit(num, 0)
     num = set_bit(num, length - 1)
     return num
-            
-# main
-
-# Geracao de chaves publica e privada
-#PK = getPrimeCandidate(KEY_LEN)
-#while(not(isPrime(PK))):
-#    PK = getPrimeCandidate(KEY_LEN)
-
-#SK = getPrimeCandidate(KEY_LEN)
-#while(not(isPrime(SK))):
-#    SK = getPrimeCandidate(KEY_LEN)
-
-#print(PK)
-#print(SK)
