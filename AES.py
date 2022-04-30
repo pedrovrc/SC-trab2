@@ -73,7 +73,7 @@ def printKeys(keys):
     return
 
 # listas de tamanhos iguais somente
-def strXOR(str1, str2):
+def listXOR(str1, str2):
     str_final = []
     for i in range(len(str1)):
         str_final.append(chr(ord(str1[i]) ^ ord(str2[i])))  # bitwise XOR em cada caracter
@@ -105,12 +105,12 @@ def generateRoundKeys(key):
                 temp = round_keys[i][12:16]                         # amostrando 4 ultimas letras
                 temp.append(temp.pop(0))                            # rotacao de coluna
                 temp = subBytes(temp)                               # traducao pela tabela subBytes
-                aux = strXOR(RCONTABLE[i], round_keys[i][0:4])      #
-                list_temp = strXOR(temp, aux)                       # XOR com coluna da tabela Rcon e com 4 primeiras letras da ultima chave
+                aux = listXOR(RCONTABLE[i], round_keys[i][0:4])      #
+                list_temp = listXOR(temp, aux)                       # XOR com coluna da tabela Rcon e com 4 primeiras letras da ultima chave
             else:                                           # CASO INTERMEDIARIO
                 temp = list_temp[j*4 - 4 : j*4]                     # amostrando 4 ultimas letras geradas
                 aux = round_keys[i][j*4 : j*4 + 4]                  #
-                temp = strXOR(temp, aux)                            # XOR com letras de 4 colunas à esquerda
+                temp = listXOR(temp, aux)                            # XOR com letras de 4 colunas à esquerda
                 for k in range(4):
                     list_temp.append(temp[k])
         round_keys.append(list_temp)                # armazenando chave de rodada
@@ -185,7 +185,7 @@ def CTRmode(message, key):
         str_nonce = int2String(nonce + count)
         plaintext_block = message[i * 16: i * 16 + 16]
         cipher_block = block_encryption(str_nonce, key)
-        final_message += list2String(strXOR(cipher_block, plaintext_block))
+        final_message += list2String(listXOR(cipher_block, plaintext_block))
     
     remainder = len(message) % 16
     if remainder != 0:
@@ -195,6 +195,6 @@ def CTRmode(message, key):
         cipher_block = block_encryption(str_nonce, key)
         for i in range(16 - remainder):
             plaintext_block += '0'
-        final_message += list2String(strXOR(cipher_block, plaintext_block)[:remainder])
+        final_message += list2String(listXOR(cipher_block, plaintext_block)[:remainder])
 
     return final_message

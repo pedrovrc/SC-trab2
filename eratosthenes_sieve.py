@@ -15,3 +15,4 @@ def generateList(N):
         else:
             p = prime_list[index]
     return prime_list
+    
