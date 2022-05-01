@@ -1,26 +1,25 @@
 import AES
 
-# ROTINA PRINCIPAL ---------------------------------------------------------------------------------------------
-#   Rotina que cuida da recepcao de inputs e entrega de outputs para um usuario. Feita para iniciar a execucao
-# do algoritmo em questao.
+def list2HexString(list):
+    string = ""
+    for i in range(0, len(list)):
+        string = string + str(hex(list[i]))[2:]
+    return string
 
-print("Insira a chave de cifracao (16 caracteres)")
-key = input()
+def str2Hex(string):
+    ascii_values = []
+    for character in string:
+        ascii_values.append(ord(character))
+    return list2HexString(ascii_values)
 
-print("Insira a mensagem a ser cifrada:")
-message = input()
+key = "CHAVE_AES_CTR_128"
+message = "The quick brown fox jumps over the lazy dog."
+print("\n-----------------------------------------------------------------------------------------------------------------------------")
+print("MENSAGEM:\t\t", message)
+print("-----------------------------------------------------------------------------------------------------------------------------")
 
-print("Entradas:")
-print("Mensagem, texto:", message)
-print("Mensagem, binario:", end = ' ')
-for i in range(len(message)):
-    print(bin(ord(message[i]))[2:], '|', end = '')
-print("\nChave:", key)
-
-encrypted_message = AES.CTRmode(message, key)
-
-print("Saida:")
-print("Mensagem:", encrypted_message)
-print("Mensagem, binario:", end = ' ')
-for i in range(len(encrypted_message)):
-    print(hex(ord(encrypted_message[i]))[2:], '|', end = '')
+encrypted = AES.CTRmode(message, key)
+print("MENSAGEM CIFRADA (HEX):\t", str2Hex(encrypted))
+print("-----------------------------------------------------------------------------------------------------------------------------")
+print("MENSAGEM RECUPERADA:\t", AES.CTRmode(encrypted, key))
+print("-----------------------------------------------------------------------------------------------------------------------------\n")

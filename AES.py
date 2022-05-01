@@ -32,6 +32,8 @@ GALOISMATRIX = np.array([[2, 3, 1, 1],
                          [1, 1, 2, 3],
                          [3, 1, 1, 2]], dtype=np.int8)
 
+NONCE = random.getrandbits(128)
+
 # DEFINICOES ---------------------------------------------------------------------------------------------
 #   Definicoes de tamanhos comumente usados. Criados para promover maior clareza no codigo e retirar
 # numeros soltos.
@@ -173,16 +175,15 @@ def block_encryption(msg_in, key_in):
     return msg_in
 
 def CTRmode(message, key):
-    nonce = random.getrandbits(128)
     count = 0
     str_nonce = ''
     plaintext_block = ''
     cipher_block = ''
     final_message = ''
 
-    for i in range(int(len(message)/16)):
+    for i in range(0, int(len(message)/16)):
         count = i
-        str_nonce = int2String(nonce + count)
+        str_nonce = int2String(NONCE + count)
         plaintext_block = message[i * 16: i * 16 + 16]
         cipher_block = block_encryption(str_nonce, key)
         final_message += list2String(listXOR(cipher_block, plaintext_block))
@@ -191,7 +192,7 @@ def CTRmode(message, key):
     if remainder != 0:
         plaintext_block = message[len(message) - remainder:]
         count += 1
-        str_nonce = int2String(nonce + count)
+        str_nonce = int2String(NONCE + count)
         cipher_block = block_encryption(str_nonce, key)
         for i in range(16 - remainder):
             plaintext_block += '0'

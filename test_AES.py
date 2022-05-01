@@ -4,9 +4,9 @@ import binascii
 import AES as local_AES
 
 #inputs
-plaintext = 'Message Encryption'
-key = "TEAMSCORPIAN1234"
-key_bin = b"TEAMSCORPIAN1234"
+plaintext = 'Sample Text'
+key = "CHAVE_AES_CTR128"
+key_bin = b"CHAVE_AES_CTR128"
 
 print("Mensagem: ", plaintext)
 print("Chave: ", key)
