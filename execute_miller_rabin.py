@@ -1,14 +1,15 @@
-from importlib.resources import read_binary
+# Este modulo deve ser utilizado para testar isoladamente as funcionalidades do moodulo "miller-rabin.py".
+
 import miller_rabin as MR
 
-# Geracao de chaves publica e privada
-PK = MR.getPrimeCandidate(MR.KEY_LEN)
-while(not(MR.isPrime(PK))):
-    PK = MR.getPrimeCandidate(MR.KEY_LEN)
+length = 16
+P = MR.getPrimeCandidate(length)
+while(not(MR.isPrime(P))):
+    P = MR.getPrimeCandidate(length)
 
-SK = MR.getPrimeCandidate(MR.KEY_LEN)
-while(not(MR.isPrime(SK))):
-    SK = MR.getPrimeCandidate(MR.KEY_LEN)
+Q = MR.getPrimeCandidate(length)
+while(not(MR.isPrime(Q))):
+    Q = MR.getPrimeCandidate(length)
 
-print(PK)
-print(SK)
+print(P)
+print(Q)

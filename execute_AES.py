@@ -1,5 +1,8 @@
+# Este modulo deve ser utilizado para testar isoladamente as funcionalidades do modulo "AES.py".
+
 import AES
 
+# FUNCOES AUXILIARES --------------------------------------------------------------------------------------------------------------------
 def list2HexString(list):
     string = ""
     for i in range(0, len(list)):
@@ -12,6 +15,8 @@ def str2Hex(string):
         ascii_values.append(ord(character))
     return list2HexString(ascii_values)
 
+
+# ROTINA PRINCIPAL --------------------------------------------------------------------------------------------------------------------
 key = "CHAVE_AES_CTR_128"
 message = "The quick brown fox jumps over the lazy dog."
 print("\n-----------------------------------------------------------------------------------------------------------------------------")

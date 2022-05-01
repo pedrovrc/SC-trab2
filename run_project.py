@@ -1,6 +1,9 @@
 import RSA
 import AES
 
+# FUNCOES AUXILIARES ----------------------------------------------------------------------------------------------------------------------
+#   Funcoes utilizadas para ajudar na visualizacao de dados no terminal.
+
 def list2HexString(list):
     string = ""
     for i in range(0, len(list)):
@@ -13,7 +16,10 @@ def str2Hex(string):
         ascii_values.append(ord(character))
     return list2HexString(ascii_values)
 
-# SENDER -----------------------------------------------
+# SENDER ----------------------------------------------------------------------------------------------------------------------
+#   Tarefas que seriam executadas em um dispositivo remetente, ao enviar uma mensagem nesses padroes.
+
+# Funcao demonstrativa, para indicar os dados que deveriam ser enviados do remetente para o destinatario.
 def send(pk, enc_msg, enc_key, enc_hash):
     print("Enviando dados...")
     return
@@ -41,7 +47,9 @@ print("-------------------------------------------------------------------------
 
 send(pk, encrypted_msg, encrypted_key, encrypted_hash)
 
-# RECEIVER ----------------------------------------------
+# RECEIVER ----------------------------------------------------------------------------------------------------------------------
+#   Tarefas que seriam executadas em um dispositivo destinatario, ao receber uma mensagem nesses padroes.
+
 recov_AES_key = RSA.decrypt(encrypted_key, pk)
 recov_msg = AES.CTRmode(encrypted_msg, recov_AES_key)
 recov_hash, recov_nonce = RSA.decrypt_hash(encrypted_hash, pk)
@@ -56,6 +64,7 @@ print("-------------------------------------------------------------------------
 print("HASH CALCULADO: (HEX)\t", hex(int(new_hash,2))[2:])
 print("-----------------------------------------------------------------------------------------------------------------------------\n")
 
+# Verificacao de assinatura
 if new_hash == recov_hash:
     print("Assinatura confirmada.")
 else:

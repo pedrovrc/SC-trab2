@@ -1,11 +1,8 @@
+# Implementacao do teste de primalidade de Miller-Rabin
+
 import random
 
-KEY_LEN = 16
-LIMIT = 200
-
-# numeros com 1024 bits de tamanho
-# ou seja, numeros maiores ou iguais a 2^1023,
-# aproximadamente 9 * 10^307, 308 digitos
+LIMIT = 2000
 
 def isEven(number):
     if number % 2 == 0:
@@ -14,7 +11,7 @@ def isEven(number):
         return False
 
 def isPrime(number):
-    # Miller-Rabin
+    # Teste de primalidade de Miller-Rabin
     number_alt = number - 1
     power = 0
     while (isEven(number_alt)):
@@ -43,7 +40,10 @@ def set_bit(value, bit):
     return value | (1<<bit)
 
 def getPrimeCandidate(length):
+    # Gera numero aleatorio de tamanho desejado
     num = random.getrandbits(length)
+
+    # Setar bits para garantir que o numero seja impar e grande o suficiente
     num = set_bit(num, 0)
     num = set_bit(num, length - 1)
     return num

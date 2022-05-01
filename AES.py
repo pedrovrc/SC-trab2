@@ -5,7 +5,6 @@ import random
 #   Variaveis globais feitas para armazenar dados extensos que sao parte do algoritmo da cifra de bloco AES. Foram
 # criadas globalmente para não colocar declaracoes grandes no meio do codigo.
 
-
 RCONTABLE = [[chr(1), chr(0), chr(0), chr(0)], [chr(2), chr(0), chr(0), chr(0)],
              [chr(4), chr(0), chr(0), chr(0)], [chr(8), chr(0), chr(0), chr(0)],
              [chr(16), chr(0), chr(0), chr(0)], [chr(32), chr(0), chr(0), chr(0)],
@@ -32,12 +31,12 @@ GALOISMATRIX = np.array([[2, 3, 1, 1],
                          [1, 1, 2, 3],
                          [3, 1, 1, 2]], dtype=np.int8)
 
-NONCE = random.getrandbits(128)
 
 # DEFINICOES ---------------------------------------------------------------------------------------------
 #   Definicoes de tamanhos comumente usados. Criados para promover maior clareza no codigo e retirar
 # numeros soltos.
 
+NONCE = random.getrandbits(128)
 
 
 # FUNCOES AUXILIARES ---------------------------------------------------------------------------------------------
@@ -66,14 +65,6 @@ def int2String(number):
     string = string[::-1]
     return string
 
-def printKeys(keys):
-    for i in range(len(keys)):
-        print("[", end = '')
-        for j in range(len(keys[i])):
-            print(hex(ord(keys[i][j])), ", ", end = '')
-        print("]")
-    return
-
 # listas de tamanhos iguais somente
 def listXOR(str1, str2):
     str_final = []
@@ -92,9 +83,7 @@ def listRotate(list, amount):
 # FUNCOES PRINCIPAIS ---------------------------------------------------------------------------------------------
 #   Funcoes integrais para a logica do algoritmo da cifra de bloco AES e para o modo de operacao CTR.
 
-
-#   Funcao generateRoundKeys:
-# Funcao responsavel por gerar uma lista que contenha todas as chaves utilizadas na cifra de bloco AES.
+#   Gera uma lista que contem todas as chaves utilizadas na cifra de bloco AES.
 def generateRoundKeys(key):
     round_keys = []
     round_keys.append(key)
@@ -104,35 +93,45 @@ def generateRoundKeys(key):
     for i in range(10):
         for j in range(4):
             if j == 0:                                      # CASO INICIAL
-                temp = round_keys[i][12:16]                         # amostrando 4 ultimas letras
-                temp.append(temp.pop(0))                            # rotacao de coluna
-                temp = subBytes(temp)                               # traducao pela tabela subBytes
+                temp = round_keys[i][12:16]                          # amostra 4 ultimas letras
+                temp.append(temp.pop(0))                             # rotaciona coluna
+                temp = subBytes(temp)                                # traduz pela tabela subBytes
                 aux = listXOR(RCONTABLE[i], round_keys[i][0:4])      #
-                list_temp = listXOR(temp, aux)                       # XOR com coluna da tabela Rcon e com 4 primeiras letras da ultima chave
+                list_temp = listXOR(temp, aux)                       # XOR com coluna da tabela RCON e com 4 primeiras letras da ultima chave
             else:                                           # CASO INTERMEDIARIO
-                temp = list_temp[j*4 - 4 : j*4]                     # amostrando 4 ultimas letras geradas
-                aux = round_keys[i][j*4 : j*4 + 4]                  #
+                temp = list_temp[j*4 - 4 : j*4]                      # amostra 4 ultimas letras geradas
+                aux = round_keys[i][j*4 : j*4 + 4]                   #
                 temp = listXOR(temp, aux)                            # XOR com letras de 4 colunas à esquerda
                 for k in range(4):
                     list_temp.append(temp[k])
         round_keys.append(list_temp)                # armazenando chave de rodada
     return round_keys
 
+#   Realiza o passo denominado de "addRoundKey". Esse passo do algoritmo consiste em fazer a operacao XOR
+# das colunas da mensagem com as colunas da chave de rodada. retorna-se o resultado dessa operacao.
 def addRoundKey(msg, round_key):
     temp = []
     for i in range(len(msg)):
         temp.append(chr(ord(msg[i]) ^ ord(round_key[i])))
     return temp
 
+#   Realiza o passo denominado de "subBytes". Esse passo consiste em checar a tabela BYTESTABLE e substituir
+# o byte presente na mensagem pelo correspondente indicado pela tabela.
 def subBytes(msg):
     msb = 0
     lsb = 0
     for i in range(len(msg)):
-        msb = int((ord(msg[i]) & 240) / 16)     # 240 = 0b11110000
-        lsb = ord(msg[i]) & 15                  # 15  = 0b00001111
+        msb = int((ord(msg[i]) & 240) / 16)     # 240 = 0b11110000 (mascara)
+        lsb = ord(msg[i]) & 15                  # 15  = 0b00001111 (mascara)
         msg[i] = chr(BYTESTABLE[msb][lsb])
     return msg
 
+#   Realiza o passo denominado de "shiftRows". Esse passo consiste em aplicar rotacoes as linhas da mensagem.
+# As rotacoes seguem o padrao:
+#           linha 1 -> rot(0)
+#           linha 2 -> rot(1)
+#           linha 3 -> rot(2)
+#           linha 4 -> rot(3)
 def shiftRows(msg):
     new_row2 = listRotate([msg[1], msg[5], msg[9], msg[13]], 1)
     new_row3 = listRotate([msg[2], msg[6], msg[10], msg[14]], 2)
@@ -145,6 +144,8 @@ def shiftRows(msg):
         new_msg.append(new_row4[i])
     return new_msg
 
+#   Realiza o passo denominado de "mixColumns". Esse passo consiste em calcular uma multiplicacao matricial
+# de cada coluna da mensagem com uma matriz armazenada na variavel GALOISMATRIX.
 def mixColumns(msg):
     ints = [int(ord(x)) for x in msg]
     new_ints = []
@@ -152,7 +153,8 @@ def mixColumns(msg):
         new_ints += np.matmul(GALOISMATRIX, np.array(ints[i : i+4], dtype=np.uint8)).tolist()
     return [chr(x) for x in new_ints]
 
-# Tamanho da mensagem: 128 bits - 16 caracteres
+#   Responsavel por interpretar a mensagem e a chave como "matrizes" 4x4, transformando-as em listas. Tambem
+# garante a ordem das operacoes de acordo com a cifra de bloco AES com 128 bits.
 def block_encryption(msg_in, key_in):
 
     msg = string2List(msg_in)
@@ -174,28 +176,31 @@ def block_encryption(msg_in, key_in):
 
     return msg_in
 
+#   Responsavel por garantir o modo de operacao CTR utilizando a cifra de bloco AES.
 def CTRmode(message, key):
+    # Declaracao de variaveis auxiliares
     count = 0
     str_nonce = ''
     plaintext_block = ''
     cipher_block = ''
     final_message = ''
 
-    for i in range(0, int(len(message)/16)):
-        count = i
-        str_nonce = int2String(NONCE + count)
-        plaintext_block = message[i * 16: i * 16 + 16]
-        cipher_block = block_encryption(str_nonce, key)
-        final_message += list2String(listXOR(cipher_block, plaintext_block))
+                                                                    # Para cada 16 caracteres da mensagem (16 char * 8 bits = 128 bits)
+    for i in range(0, int(len(message)/16)):                                                #
+        count = i                                                                           #
+        str_nonce = int2String(NONCE + count)                                               # Computa nonce + count
+        plaintext_block = message[i * 16: i * 16 + 16]                                      # Separa bloco de 128 bits da mensagem
+        cipher_block = block_encryption(str_nonce, key)                                     # Realiza cifra de bloco com nonce e chave fornecida
+        final_message += list2String(listXOR(cipher_block, plaintext_block))                # Armazena resultado do XOR do bloco cifrado com o segmento da mensagem 
     
     remainder = len(message) % 16
-    if remainder != 0:
-        plaintext_block = message[len(message) - remainder:]
-        count += 1
-        str_nonce = int2String(NONCE + count)
-        cipher_block = block_encryption(str_nonce, key)
-        for i in range(16 - remainder):
+    if remainder != 0:                                              # Caso haja segmento final com comprimento < 16 caracteres:
+        plaintext_block = message[len(message) - remainder:]                                # Separa segmento restante da mensagem
+        count += 1                                                                          #
+        str_nonce = int2String(NONCE + count)                                               # Computa nonce + count
+        cipher_block = block_encryption(str_nonce, key)                                     # Realiza cifra de bloco com nonce e chave fornecida
+        for i in range(16 - remainder):                                                     # Realiza padding no segmento da mensagem
             plaintext_block += '0'
-        final_message += list2String(listXOR(cipher_block, plaintext_block)[:remainder])
+        final_message += list2String(listXOR(cipher_block, plaintext_block)[:remainder])    # Armazena resultado do XOR do bloco cifrado com o segmento da mensagem
 
     return final_message

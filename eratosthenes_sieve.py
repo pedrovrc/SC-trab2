@@ -1,3 +1,4 @@
+# Implementação do Crivo de Eratostenes
 def generateList(N):
     prime_list = [x for x in range(2, N)]
     p = prime_list[0]
