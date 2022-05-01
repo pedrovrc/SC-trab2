@@ -9,9 +9,9 @@ import hashlib
 RANGE = 2000                    # Tamanho maximo dos primos gerados na geracao de chaves
 SIZE_1 = 256                    # Representa 256 bits, usado para padding
 SIZE_2 = 512                    # Representa 512 bits, usado para padding
-MODE = 'Erastothenes Sieve'     # Modo de geracao de primos escolhido.
+MODE = 'Eratosthenes Sieve'     # Modo de geracao de primos escolhido.
                                 # Valores aceitos:
-                                    # Erastothenes Sieve
+                                    # Eratosthenes Sieve
                                     # Miller-Rabin
 
 # FUNCOES AUXILIARES ------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ def generateKeys():
             Q = MR.getPrimeCandidate(RANGE)
             if MR.isPrime(Q) and Q != P:
                 break
-    elif MODE == 'Erastothenes Sieve':
+    elif MODE == 'Eratosthenes Sieve':
         # UTILIZANDO CRIVO DE ERASTOTENES ------------------------
         # Escolher 2 primos p e q
         prime_list = primes.generateList(RANGE)
